@@ -407,7 +407,7 @@ def main():
         token=model_args.token,
         trust_remote_code=model_args.trust_remote_code,
     )
-    model = AutoModelForSeq2SeqLM.from_pretrained(
+    """model = AutoModelForSeq2SeqLM.from_pretrained(
         model_args.model_name_or_path,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
@@ -415,7 +415,9 @@ def main():
         revision=model_args.model_revision,
         token=model_args.token,
         trust_remote_code=model_args.trust_remote_code,
-    )
+    )"""
+    # Randomly Initialized Weights로 PreTraining 진행하기 위해 from_pretrained 대신 from_config로 모델 init
+    model = AutoModelForSeq2SeqLM.from_config(config)
 
     # We resize the embeddings only when necessary to avoid index errors. If you are creating a model from scratch
     # on a small vocab and want a smaller embedding size, remove this test.
@@ -577,7 +579,8 @@ def main():
         )
 
     # Metric
-    metric = evaluate.load("sacrebleu", cache_dir=model_args.cache_dir)
+    """metric = evaluate.load("sacrebleu", cache_dir=model_args.cache_dir)"""
+    metric = evaluate.load("bleu", cache_dir=model_args.cache_dir)  # BLEU1~4 계산 위해 sacreBLEU 대신 BLEU 사용
 
     def postprocess_text(preds, labels):
         preds = [pred.strip() for pred in preds]
@@ -598,8 +601,14 @@ def main():
         # Some simple post-processing
         decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
 
+        """
         result = metric.compute(predictions=decoded_preds, references=decoded_labels)
         result = {"bleu": result["score"]}
+        """
+        result = {}
+        for i in range(1, 5):
+            bleu = metric.compute(predictions=decoded_preds, references=decoded_labels, max_order=i)  # max_order 통해 n-gram 정의
+            result[f'bleu{i}'] = bleu['bleu'] * 100  # evalute library의 bleu는 0~1 범위로 값을 반환 -> 논문과 같이 백분율로
 
         prediction_lens = [np.count_nonzero(pred != tokenizer.pad_token_id) for pred in preds]
         result["gen_len"] = np.mean(prediction_lens)
