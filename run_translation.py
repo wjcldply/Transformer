@@ -25,6 +25,8 @@ import warnings
 from dataclasses import dataclass, field
 from typing import Optional
 
+import torch
+
 import datasets
 import evaluate
 import numpy as np
@@ -407,7 +409,7 @@ def main():
         token=model_args.token,
         trust_remote_code=model_args.trust_remote_code,
     )
-    """model = AutoModelForSeq2SeqLM.from_pretrained(
+    pretrained_model = AutoModelForSeq2SeqLM.from_pretrained(
         model_args.model_name_or_path,
         from_tf=bool(".ckpt" in model_args.model_name_or_path),
         config=config,
@@ -415,7 +417,7 @@ def main():
         revision=model_args.model_revision,
         token=model_args.token,
         trust_remote_code=model_args.trust_remote_code,
-    )"""
+    )
     # Randomly Initialized Weights로 PreTraining 진행하기 위해 from_pretrained 대신 from_config로 모델 init
     model = AutoModelForSeq2SeqLM.from_config(config)
 
