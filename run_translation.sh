@@ -20,11 +20,11 @@ python run_translation.py --model_name_or_path google-t5/t5-small \
                           --source_prefix "translate German to English: " \
                           --train_file datasets/iwslt17.de.en/train.jsonl \
                           --validation_file datasets/iwslt17.de.en/valid.jsonl \
-                          --output_dir /tmp/tst_translation \
-                          --per_device_train_batch_size=4 \
-                          --per_device_eval_batch_size=4 \
+                          --output_dir model_checkpoint/tst_translation \
+                          --per_device_train_batch_size=64 \
+                          --per_device_eval_batch_size=64 \
+                          --num_train_epochs=30 \
                           --overwrite_output_dir \
                           --predict_with_generate
 
 exit 0
-
